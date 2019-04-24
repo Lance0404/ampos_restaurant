@@ -6,3 +6,10 @@
 * orm: sqlalchemy
 
 
+### Schema design
+* Table:
+`
+menu
+bill_order
+`
+

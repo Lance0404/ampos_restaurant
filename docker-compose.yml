@@ -1,0 +1,65 @@
+version: '3.6'
+networks:
+    network:
+        name: ar_network
+services:
+    nginx:
+        container_name: ar_nginx
+        image: nginx:1.12
+        ports:
+            - "81:80" # bind to different HOST port
+            # - "443:443"
+        volumes:
+            - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+            - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+        networks:
+            - network
+        restart: always
+    psql:
+        container_name: ar_psql
+        image: postgres
+        volumes:
+            - ar_pgdata:/var/lib/postgresql/data
+        ports:
+            - "5433:5432" # bind to different HOST port
+        networks:
+            - network
+        restart: always
+    web:
+        container_name: ar_web
+        build:
+            context: .
+            dockerfile: Dockerfile
+        image: ar
+        # image: breaktimeinc/breaktime.contentcore
+        # command: uwsgi --ini uwsgi.ini
+        command: python manage.py runserver
+        # extra_hosts:
+        #   - 'ar_web:127.0.0.1'
+        volumes:
+           - .:/usr/src/app
+        env_file: ar.env
+        environment:
+            - CONTAINER_TAG=web
+        expose:
+            - "8800"
+        ports:
+            - "8900:8900" # debug mode
+            - "8800:8800" # proxy pass from nginx
+        logging:
+            driver: "json-file"
+            options:
+                max-size: "50m"
+        networks:
+            - network
+        restart: always
+        # healthcheck:
+        #     test: ["CMD-SHELL", "curl -f http://localhost:8800/v1/create_tasks/1 && echo 'OK'"]
+        #     interval: 30m30s
+        #     timeout: 10s
+        #     retries: 3
+        #     start_period: 40s
+volumes:
+    ar_pgdata:
+        external: true
+        # Please create the volume manually using `docker volume create --name=ar_pgdata` and try again.
