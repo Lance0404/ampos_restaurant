@@ -95,8 +95,14 @@ def menu_search():
 @headers({'Cache-Control': 's-maxage=0, max-age=0'})
 def billorder():
     '''
+    # insert
     curl -v -X POST 'http://localhost:8900/v1/billorder' -H 'Content-Type: application/json' -d '{"bill_no": 1, "name": "Hawaiian Pizza", "quantity": 1}'
 
+    # update
+    curl -v -X PUT 'http://localhost:8900/v1/billorder' -H 'Content-Type: application/json' -d '{"bill_no": 1, "name": "Hawaiian Pizza", "quantity": 1}'
+
+    # query
+    curl -v -X GET 'http://localhost:8900/v1/billorder' -H 'Content-Type: application/json' -d '{"bill_no": 1, "name": "Hawaiian Pizza", "quantity": 1}'
     '''
 
     res = {'msg': '', 'status': False}
@@ -106,7 +112,31 @@ def billorder():
 
     if ret:
         res = {'msg': 'ok', 'status': True}
-        if isinstance(ret, dict):
+        if isinstance(ret, list):
+            res.update({'data': ret})
+
+    res.update(res)
+    return jsonify(res), 200
+
+
+@bp.route('/billorder/stat', methods=['GET'])
+@headers({'Cache-Control': 's-maxage=0, max-age=0'})
+def billorder_stat():
+    '''
+    # query
+    curl -v -X GET 'http://localhost:8900/v1/billorder/stat' -H 'Content-Type: application/json' -d '{"bill_no": 1}'
+
+
+
+    '''
+    res = {'msg': '', 'status': False}
+
+    data = request.json
+    ret = billorder_stat_op(data=data)
+
+    if ret:
+        res = {'msg': 'ok', 'status': True}
+        if isinstance(ret, list):
             res.update({'data': ret})
 
     res.update(res)

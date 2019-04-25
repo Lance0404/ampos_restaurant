@@ -1,6 +1,7 @@
 from ar.models import Menu, BillOrder
 import logging
 import hashlib
+from ar import db
 
 logger = logging.getLogger('ar')
 
@@ -142,14 +143,39 @@ def billorder_operation(data: dict, method: str):
             data['name_hash'] = encode_menu_name(data['name'])
 
         bo = BillOrder()
-        q = dict(name_hash=data['name_hash'])
+        # q = dict(name_hash=data['name_hash'])
 
         if method == 'POST':
             bo.insert(data)
             return True
         if method == 'PUT':
-            bo.update(q, data)
-            return True
+            logger.error(f'not sure how to do update on this table!')
+            return False
+            # bo.update(q, data)
+            # return True
         if method == 'GET':
-            doc = bo.select(q)
-            return doc.to_dict()
+            # doc = bo.select(q, order_by=BillOrder.id)
+            q = dict(bill_no=data['bill_no'])
+            bo_list = BillOrder.query.filter_by(
+                **q).order_by(BillOrder.id.asc()).all()
+            ret_list = []
+            for i in bo_list:
+                ret_list.append(i.to_dict())
+
+            return ret_list
+
+
+def billorder_stat_op(data: dict):
+
+    bill_no = data['bill_no']
+
+    sql_str = f'select a.*,b.price from bill_order as a left join menu as b on a.name_hash = b.name_hash where a.bill_no = \'{bill_no}\';'
+    logger.debug(f'sql_str {sql_str}')
+
+    ret = db.engine.execute(sql_str)
+
+    logger.debug(f'ret {ret}')
+
+    for row in ret:
+
+        logger.debug(row)
