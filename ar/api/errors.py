@@ -1,3 +1,5 @@
+# these are endpoint related errors
+
 class InvalidUsage(Exception):
     '''
     example from

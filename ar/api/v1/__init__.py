@@ -9,7 +9,7 @@ from sqlalchemy.exc import IntegrityError, InvalidRequestError, OperationalError
 @bp.errorhandler(404)
 def error_404(e):
     # current_app.logger.error(f'this is a 404 error')
-    response = dict(status=0, message="404 Error from CC")
+    response = dict(status=0, message="404 Error from server")
     return jsonify(response), 404
 
 
@@ -22,7 +22,7 @@ def error_500(e):
 
 @bp.errorhandler(OperationalError)
 def handle_operationalerror(e):
-    response = dict(status=0, message="DB OperationalError from CC")
+    response = dict(status=0, message="DB OperationalError from sql db")
     return jsonify(response), 500
 
 
@@ -36,5 +36,5 @@ def handle_invalid_usage(e):
 @bp.errorhandler(KeyError)
 def handle_key_error(e):
     current_app.logger.error(f'this is a KeyError')
-    response = dict(status=0, message="KeyError from CC")
+    response = dict(status=0, message="KeyError from server")
     return jsonify(response), 401

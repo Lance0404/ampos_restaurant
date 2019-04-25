@@ -4,14 +4,13 @@ from sqlalchemy.dialects import postgresql
 from sqlalchemy import func, Index, Column, ForeignKey
 from sqlalchemy import Integer, Boolean, Enum, DateTime, String, Text
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import relationship, backref
+# from sqlalchemy.orm import relationship, backref
 
 # from ar import logger
 import logging
 from ar import mylogging
-# failed to make root logger function normally
 logger = logging.getLogger('ar')
-# logger = logging.getLogger('cc.models')
+
 
 from sqlalchemy.orm import load_only
 from sqlalchemy.exc import IntegrityError, InvalidRequestError, OperationalError, DatabaseError
@@ -67,14 +66,6 @@ class Model(db.Model):
                         logger.debug(f'insert {self.__tablename__} successful')
                     else:
                         self.update(query, data)
-                if 0:  # deprecated
-                    db.session.add(doc)
-                    db.session.commit()
-                    ret = self.select(query)
-                    if ret and getattr(ret, 'to_dict', None):
-                        for k, v in ret.to_dict().items():
-                            setattr(self, k, v)
-                    logger.debug(f'insert {self.__tablename__} successful')
                 break
             except OperationalError as e:
                 db.session.rollback()
@@ -86,6 +77,19 @@ class Model(db.Model):
                 logger.error(e)
                 db.session.rollback()
                 break
+
+    def insert(self, data: dict):
+        try:
+            doc = self.__class__(**data)
+            db.session.add(doc)
+            db.session.commit()
+            # ret = self.select(query)
+            # if ret and getattr(ret, 'to_dict', None):
+                # for k, v in ret.to_dict().items():
+                    # setattr(self, k, v)
+            logger.debug(f'insert {self.__tablename__} successful')
+        except Exception as e:
+            logger.error(e)
 
     def commit(self, query: dict=None, data: dict=None):
         try:
@@ -197,20 +201,45 @@ class Menu(Model):
     desc = Column(String(1000), nullable=True)
     image = Column(Text(), nullable=True)
     price = Column(Integer, nullable=False, index=True)
-    details = Column(Text(), nullable=True)
+    # details = Column(Text(), nullable=True)
+    details = Column(postgresql.ARRAY(Text, dimensions=1), nullable=True)
     _mtime = Column(DateTime(
         timezone=False), onupdate=datetime.datetime.utcnow, default=datetime.datetime.utcnow)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'name_hash': self.name_hash,
+            'desc': self.desc,
+            'image': self.image,
+            'price': self.price,
+            'details': self.details,
+            '_mtime': self._mtime
+        }
 
 
 class BillOrder(Model):
     __tablename__ = 'bill_order'
     id = Column(Integer, primary_key=True)
+    # each represents a unique customer
     bill_no = Column(Integer, nullable=False)
-    name = Column(String(100), nullable=False, index=True, unique=True)
-    name_hash = Column(String(100), nullable=False, index=True, unique=True)
+    name = Column(String(100), nullable=False, index=True)
+    name_hash = Column(String(100), nullable=False, index=True)
     quantity = Column(Integer, nullable=False, index=True)
-    # order time
+    # order time is like create time
     otime = Column(DateTime(timezone=False),
                    default=datetime.datetime.utcnow)
     _mtime = Column(DateTime(
-        timezone=False), onupdate=datetime.datetime.utcnow, default=datetime.datetime.utcnow)
+        timezone=False), onupdate=datetime.datetime.utcnow, default=datetime.datetime.utcnow)  # not necessary
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'bill_no': self.bill_no,
+            'name': self.name,
+            'name_hash': self.name_hash,
+            'quantity': self.quantity,
+            'otime': self.otime,
+            '_mtime': self._mtime
+        }

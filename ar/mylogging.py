@@ -1,17 +1,11 @@
 from ar.config import *
 import logging.config
 import logging
-import flask
 
 
 MY_LOGGINGS = {
     "version": 1,
     "disable_existing_loggers": False,
-    # "filters": {
-    #     "request_id": {
-    #         "()": RequestIdFilter
-    #     }
-    # },
     "formatters": {
         "default": {
             "format": "%(asctime)s - %(name)s:%(module)s:%(funcName)s:%(lineno)d - %(levelname)s - %(process)d - %(message)s"
@@ -22,13 +16,11 @@ MY_LOGGINGS = {
             "class": "logging.StreamHandler",
             "level": "DEBUG",
             "formatter": "default",
-            # "filters": ["request_id"]
         },
         "file": {
             "class": "logging.handlers.TimedRotatingFileHandler",
             "level": "DEBUG",
             "formatter": "default",
-            # "filters": ["request_id"],
             "filename": f"/var/log/ar_{CONTAINER_TAG}.log" if CONTAINER_TAG else "/var/log/contentcore/app_ar.log",
             "when": "midnight",
             "interval": 1,

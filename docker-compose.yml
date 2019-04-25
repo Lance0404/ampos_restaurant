@@ -61,5 +61,8 @@ services:
         #     start_period: 40s
 volumes:
     ar_pgdata:
+        name: ar_pgdata
         external: true
         # Please create the volume manually using `docker volume create --name=ar_pgdata` and try again.
+
+        # docker volume rm ar_pgdata

@@ -1,20 +1,91 @@
 from flask import Blueprint, request, g, jsonify, current_app, abort
 from flask_headers import headers
-from flask_cors import cross_origin
+# from flask_cors import cross_origin
 from ar import db
 import json
 from ar.api import errors
 import datetime
 from sqlalchemy.orm import joinedload, Load, load_only
 
-# from ar.models import
+from ar.tasks import *
 
+# from ar.models import
 
 bp = Blueprint('endpoints', __name__)
 
+
+@bp.route('/menu', methods=['POST', 'GET', 'DELETE', 'PUT'])
+@headers({'Cache-Control': 's-maxage=0, max-age=0'})
+def menu():
+    '''
+    # create
+    curl -v -X POST 'http://localhost:8900/v1/menu' -H 'Content-Type: application/json' -d '{"name": "Hawaiian Pizza", "desc": "All-time favourite toppings, Hawaiian pizza in Tropical Hawaii style.", "image": "https://s3-ap-southeast-1.amazonaws.com/interview.ampostech.com/backend/restaurant/menu1.jpg", "price": 300, "details": ["Italian", "Ham", "Pineapple"]}'
+
+    # update
+    curl -v -X PUT 'http://localhost:8900/v1/menu' -H 'Content-Type: application/json' -d '{"name": "Hawaiian Pizza", "desc": "All-time favourite toppings, Hawaiian pizza in Tropical Hawaii style.", "image": "https://s3-ap-southeast-1.amazonaws.com/interview.ampostech.com/backend/restaurant/menu1.jpg", "price": 300, "details": ["Italian", "Ham", "Pineapple", "Test"]}'
+
+    # query
+    curl -v -X GET 'http://localhost:8900/v1/menu' -H 'Content-Type: application/json' -d '{"name": "Hawaiian Pizza"}'
+
+    '''
+
+    res = {'msg': '', 'status': False}
+
+    data = request.json
+    ret = menu_operation(data=data, method=request.method)
+
+    if ret:
+        res = {'msg': 'ok', 'status': True}
+        if isinstance(ret, dict):
+            res.update({'data': ret})
+
+    res.update(res)
+    return jsonify(res), 200
+
+
+@bp.route('/menu/search', methods=['GET'])
+@headers({'Cache-Control': 's-maxage=0, max-age=0'})
+def menu_search():
+    res = {'msg': '', 'status': False}
+
+    data = request.json
+    ret = menu_search_op(data=data)
+
+    if ret:
+        res = {'msg': 'ok', 'status': True}
+        if isinstance(ret, dict):
+            res.update({'data': ret})
+
+    res.update(res)
+    return jsonify(res), 200
+
+
+@bp.route('/billorder', methods=['POST', 'GET', 'PUT'])
+@headers({'Cache-Control': 's-maxage=0, max-age=0'})
+def billorder():
+    '''
+    curl -v -X POST 'http://localhost:8900/v1/billorder' -H 'Content-Type: application/json' -d '{"bill_no": 1, "name": "Hawaiian Pizza", "quantity": 1}'
+
+    '''
+
+    res = {'msg': '', 'status': False}
+
+    data = request.json
+    ret = billorder_operation(data=data, method=request.method)
+
+    if ret:
+        res = {'msg': 'ok', 'status': True}
+        if isinstance(ret, dict):
+            res.update({'data': ret})
+
+    res.update(res)
+    return jsonify(res), 200
+
+
+# ------------------ tests -----------------------
+
 @bp.route('/test', methods=['POST', 'GET', 'DELETE', 'PUT'])
 @headers({'Cache-Control': 's-maxage=0, max-age=0'})
-@cross_origin()
 def test():
     '''
     curl -v -X GET 'http://localhost:8900/v1/test' -H 'Content-Type: application/json'
@@ -29,9 +100,7 @@ def test():
         current_app.logger.debug(f'test() {request.method}')
     if request.method == 'PUT':
         current_app.logger.debug(f'test() {request.method}')
-    res.update({
-        'msg': 'ok',
-        'status': True
-    })
 
+    res = {'msg': 'ok', 'status': True}
+    res.update(res)
     return jsonify(res), 200
