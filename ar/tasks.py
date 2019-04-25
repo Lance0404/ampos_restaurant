@@ -16,6 +16,16 @@ class CheckData():
         return True
 
     @classmethod
+    def menu_search(cls, data: dict):
+        # required = ['name']
+        optional = ['name', 'desc', 'details', 'offset', 'limit']
+
+        for i in optional:
+            if i in data:
+                return True
+        return False
+
+    @classmethod
     def billorder(cls, data: dict):
         required = ['bill_no', 'name', 'quantity']
         # optional = ['desc', 'image', 'details']
@@ -25,6 +35,16 @@ class CheckData():
                 return False
 
         return True
+
+    @classmethod
+    def lc_datails(cls, data: list):
+        '''
+        turn all the str in list into lowercase
+        '''
+        m_data = []
+        for i in data:
+            m_data.append(i.lower())
+        return m_data
 
 
 def encode_menu_name(name: str):
@@ -38,7 +58,7 @@ def menu_operation(data: dict, method: str):
 
     logger.debug(f'data {data}')
     if not CheckData.menu(data):
-        logger.error('check_menu_data() failed!')
+        logger.error('CheckData failed!')
         return
     else:
         # do upsert
@@ -47,6 +67,11 @@ def menu_operation(data: dict, method: str):
 
         mu = Menu()
         q = dict(name_hash=data['name_hash'])
+
+        if 'details' in data:
+            tmp = CheckData.lc_datails(data['details'])
+        data['details'] = tmp
+        logger.debug(f"details {data['details']}")
 
         if method == 'POST':
             mu.upsert(q, data)
@@ -63,8 +88,45 @@ def menu_operation(data: dict, method: str):
             return True
 
 
-def menu_search_op(data: dict):
-    pass
+def menu_search_op(data: dict=None):
+    '''
+    do a sql query with many conditions chained with and
+
+    e.g.
+    where [condition 1] and [condition 2]
+    '''
+
+    logger.debug(f'data {data}')
+
+    if data and not CheckData.menu_search(data):
+        logger.error('CheckData failed!')
+    else:
+        page = data['page']
+        limit = data['limit']
+        offset = 0 + limit * (page - 1)
+        name_kw = desc_kw = details_kw = None
+
+        q = Menu.query
+        if data:
+            if 'name' in data:
+                name_kw = data['name']
+                q = q.filter(Menu.name.ilike(f'%{name_kw}%'))
+            if 'desc' in data:
+                desc_kw = data['desc']
+                q = q.filter(Menu.desc.ilike(f'%{desc_kw}%'))
+            if 'details' in data:
+                # note: details is text[]
+                details_kw = data['details']
+                q = q.filter(Menu.details.contains(f'{{{details_kw}}}'))
+
+        mu_list = q.order_by(Menu.id.asc()).offset(offset).limit(limit).all()
+        logger.debug(f'len {len(mu_list)}')
+        ret_list = []
+        for i in mu_list:
+            logger.debug(f'i {i.to_dict()}')
+            ret_list.append(i.to_dict())
+
+        return ret_list
 
 
 def billorder_operation(data: dict, method: str):
@@ -72,7 +134,7 @@ def billorder_operation(data: dict, method: str):
 
     logger.debug(f'data {data}')
     if not CheckData.billorder(data):
-        logger.error('check_billorder_data() failed!')
+        logger.error('CheckData failed!')
         return
     else:
         # do upsert

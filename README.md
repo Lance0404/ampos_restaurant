@@ -1,10 +1,12 @@
 # ampos_restaurant
 
-### tools
+### Tools
 * framework: flask
 * db: postgresql
 * orm: sqlalchemy
 
+### Deployment
+* with docker
 
 ### Schema design
 * Table:

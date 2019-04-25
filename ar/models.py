@@ -202,7 +202,7 @@ class Menu(Model):
     image = Column(Text(), nullable=True)
     price = Column(Integer, nullable=False, index=True)
     # details = Column(Text(), nullable=True)
-    details = Column(postgresql.ARRAY(Text, dimensions=1), nullable=True)
+    details = Column(postgresql.ARRAY(Text, dimensions=1), nullable=True) # store all text as lowercase for better comparison efficiency
     _mtime = Column(DateTime(
         timezone=False), onupdate=datetime.datetime.utcnow, default=datetime.datetime.utcnow)
 

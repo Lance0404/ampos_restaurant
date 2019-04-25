@@ -46,14 +46,45 @@ def menu():
 @bp.route('/menu/search', methods=['GET'])
 @headers({'Cache-Control': 's-maxage=0, max-age=0'})
 def menu_search():
+    '''
+    # on name
+    curl -v -X GET 'http://localhost:8900/v1/menu/search?name=Hawaiian'
+
+    # on name w/ lower case
+    curl -v -X GET 'http://localhost:8900/v1/menu/search?name=hawaiian'
+
+    # on name and desc
+    curl -v -X GET 'http://localhost:8900/v1/menu/search?name=Hawaiian&desc=toppings'
+
+    # on details (text[])
+    curl -v -X GET 'http://localhost:8900/v1/menu/search?details=Ham'
+
+    curl -v -X GET 'http://localhost:8900/v1/menu/search?name=Hawaiian&desc=toppings&details=Ham'
+
+    # search all
+    curl -v -X GET 'http://localhost:8900/v1/menu/search'
+
+    # w/ limit and page
+    curl -v -X GET 'http://localhost:8900/v1/menu/search?limit=1&page=1'
+    '''
+
     res = {'msg': '', 'status': False}
 
-    data = request.json
+    # data = request.json
+    data = {}
+    if request.args:  # ImmutableMultiDict
+        for k, v in request.args.items():
+            data[k] = v
+
+    current_app.logger.debug(f'data {data}')
+    # data['offset'] = int(data.get('offset', 0))
+    data['page'] = int(data.get('page', 1))
+    data['limit'] = int(data.get('limit', 10))
     ret = menu_search_op(data=data)
 
     if ret:
         res = {'msg': 'ok', 'status': True}
-        if isinstance(ret, dict):
+        if isinstance(ret, list):
             res.update({'data': ret})
 
     res.update(res)
