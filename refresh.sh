@@ -13,11 +13,15 @@ if [ "$dropdb" == "drop" ]; then
     docker-compose up -d
     sleep 5 # takes time for containter be ready
     # ------------------ START init DB ------------------
-    psql -h localhost -p 5433 -U postgres -c "SELECT pg_terminate_backend(pg_stat_activity.pid) FROM pg_stat_activity WHERE pg_stat_activity.datname = 'ampos' AND pid <> pg_backend_pid()"
-    psql -h localhost -p 5433 -U postgres -c 'DROP DATABASE ampos'
-    psql -h localhost -p 5433 -U postgres -c 'CREATE DATABASE ampos'
+    # psql -h localhost -p 5433 -U postgres -c "SELECT pg_terminate_backend(pg_stat_activity.pid) FROM pg_stat_activity WHERE pg_stat_activity.datname = 'ampos' AND pid <> pg_backend_pid()"
+    # psql -h localhost -p 5433 -U postgres -c 'DROP DATABASE ampos'
+    # psql -h localhost -p 5433 -U postgres -c 'CREATE DATABASE ampos'
+    docker exec -it ar_psql psql -h localhost -U postgres -c "SELECT pg_terminate_backend(pg_stat_activity.pid) FROM pg_stat_activity WHERE pg_stat_activity.datname = 'ampos' AND pid <> pg_backend_pid()"
+    docker exec -it ar_psql psql -h localhost -U postgres -c 'DROP DATABASE ampos'
+    docker exec -it ar_psql psql -h localhost -U postgres -c 'CREATE DATABASE ampos'    
     # ------------------ END ------------------
 else
+    docker exec -it ar_psql psql -h localhost -U postgres -c 'CREATE DATABASE ampos'  
     docker-compose up -d
 fi
 
