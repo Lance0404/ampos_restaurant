@@ -83,10 +83,6 @@ class Model(db.Model):
             doc = self.__class__(**data)
             db.session.add(doc)
             db.session.commit()
-            # ret = self.select(query)
-            # if ret and getattr(ret, 'to_dict', None):
-            # for k, v in ret.to_dict().items():
-            # setattr(self, k, v)
             logger.debug(f'insert {self.__tablename__} successful')
         except Exception as e:
             logger.error(e)
@@ -233,8 +229,8 @@ class BillOrder(Model):
     # order time is like create time
     otime = Column(DateTime(timezone=False),
                    default=datetime.datetime.utcnow)
-    _mtime = Column(DateTime(
-        timezone=False), onupdate=datetime.datetime.utcnow, default=datetime.datetime.utcnow)  # not necessary
+    # _mtime = Column(DateTime(
+        # timezone=False), onupdate=datetime.datetime.utcnow, default=datetime.datetime.utcnow)  # not necessary
 
     def to_dict(self):
         return {

@@ -7,7 +7,7 @@ services:
         container_name: ar_nginx
         image: nginx:1.12
         ports:
-            - "81:80" # bind to different HOST port
+            - "80:80" # bind to different HOST port
             # - "443:443"
         volumes:
             - ./nginx/nginx.conf:/etc/nginx/nginx.conf
@@ -21,7 +21,7 @@ services:
         volumes:
             - ar_pgdata:/var/lib/postgresql/data
         ports:
-            - "5433:5432" # bind to different HOST port
+            - "5432:5432" # bind to different HOST port
         networks:
             - network
         restart: always
@@ -32,12 +32,13 @@ services:
             dockerfile: Dockerfile
         image: ar
         # image: breaktimeinc/breaktime.contentcore
-        # command: uwsgi --ini uwsgi.ini
-        command: python manage.py runserver
+        command: uwsgi --ini uwsgi.ini
+        # command: python manage.py runserver
         # extra_hosts:
         #   - 'ar_web:127.0.0.1'
         volumes:
            - .:/usr/src/app
+           - /var/log/ampos:/var/log/ampos
         env_file: ar.env
         environment:
             - CONTAINER_TAG=web
@@ -54,7 +55,7 @@ services:
             - network
         restart: always
         # healthcheck:
-        #     test: ["CMD-SHELL", "curl -f http://localhost:8800/v1/create_tasks/1 && echo 'OK'"]
+        #     test: ["CMD-SHELL", "curl -f http://localhost:8800/v1/test && echo 'OK'"]
         #     interval: 30m30s
         #     timeout: 10s
         #     retries: 3

@@ -118,7 +118,7 @@ def menu_search_op(data: dict=None):
                 q = q.filter(Menu.desc.ilike(f'%{desc_kw}%'))
             if 'details' in data:
                 # note: details is text[]
-                details_kw = data['details']
+                details_kw = data['details'].lower()
                 q = q.filter(Menu.details.contains(f'{{{details_kw}}}'))
 
         mu_list = q.order_by(Menu.id.asc()).offset(offset).limit(limit).all()
@@ -162,6 +162,7 @@ def billorder_operation(data: dict, method: str):
 
 
 def billorder_stat_op(bill_no: int=None):
+    raise QuantityBelowZero # test 
 
     if bill_no:
         sql_str = f'select aa.bill_no,aa.name,aa.action,aa.quantity,b.price from (select a.bill_no,a.name_hash,a.name,a.action,sum(quantity) as quantity from bill_order as a where a.bill_no = \'{bill_no}\' group by a.bill_no,a.name_hash,a.name,a.action) as aa left join menu as b on aa.name_hash = b.name_hash order by aa.bill_no,aa.name,aa.action'

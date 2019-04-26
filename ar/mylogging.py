@@ -21,7 +21,7 @@ MY_LOGGINGS = {
             "class": "logging.handlers.TimedRotatingFileHandler",
             "level": "DEBUG",
             "formatter": "default",
-            "filename": f"/var/log/ar_{CONTAINER_TAG}.log" if CONTAINER_TAG else "/var/log/contentcore/app_ar.log",
+            "filename": f"/var/log/ampos/{CONTAINER_TAG}.log" if CONTAINER_TAG else "/var/log/ampos/app.log",
             "when": "midnight",
             "interval": 1,
             "backupCount": 3,
