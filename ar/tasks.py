@@ -2,6 +2,7 @@ from ar.models import Menu, BillOrder
 import logging
 import hashlib
 from ar import db
+from .api.errors import *
 
 logger = logging.getLogger('ar')
 
@@ -148,11 +149,6 @@ def billorder_operation(data: dict, method: str):
         if method == 'POST':
             bo.insert(data)
             return True
-        if method == 'PUT':
-            logger.error(f'not sure how to do update on this table!')
-            return False
-            # bo.update(q, data)
-            # return True
         if method == 'GET':
             # doc = bo.select(q, order_by=BillOrder.id)
             q = dict(bill_no=data['bill_no'])
@@ -165,17 +161,76 @@ def billorder_operation(data: dict, method: str):
             return ret_list
 
 
-def billorder_stat_op(data: dict):
+def billorder_stat_op(bill_no: int=None):
 
-    bill_no = data['bill_no']
+    if bill_no:
+        sql_str = f'select aa.bill_no,aa.name,aa.action,aa.quantity,b.price from (select a.bill_no,a.name_hash,a.name,a.action,sum(quantity) as quantity from bill_order as a where a.bill_no = \'{bill_no}\' group by a.bill_no,a.name_hash,a.name,a.action) as aa left join menu as b on aa.name_hash = b.name_hash order by aa.bill_no,aa.name,aa.action'
+    else:
+        sql_str = f'select aa.bill_no,aa.name,aa.action,aa.quantity,b.price from (select a.bill_no,a.name_hash,a.name,a.action,sum(quantity) as quantity from bill_order as a group by a.bill_no,a.name_hash,a.name,a.action) as aa left join menu as b on aa.name_hash = b.name_hash order by aa.bill_no,aa.name,aa.action'
 
-    sql_str = f'select a.*,b.price from bill_order as a left join menu as b on a.name_hash = b.name_hash where a.bill_no = \'{bill_no}\';'
+    # action "add" should come before "remove"
+
     logger.debug(f'sql_str {sql_str}')
-
     ret = db.engine.execute(sql_str)
+    # logger.debug(f'ret {ret}')
 
-    logger.debug(f'ret {ret}')
-
+    data = {}
+    billno_order = []
+    # each (bill_no, name), store the order for later use
+    billno_to_name_order = {}  # key=bill_no, val=name[]
+    name_map_price = {}
     for row in ret:
+        logger.debug(row.items())
+        bill_no = row['bill_no']
+        name = row['name']
+        action = row['action']
+        quantity = row['quantity']
+        price = row['price']
 
-        logger.debug(row)
+        name_map_price[name] = price
+        # billno_name = (bill_no, name)  # tuple
+        # name_price = (name, price)  # tuple
+
+        if bill_no not in billno_order:
+            billno_order.append(bill_no)
+
+        billno_to_name_order.setdefault(bill_no, [])
+        if name not in billno_to_name_order[bill_no]:
+            billno_to_name_order[bill_no].append(name)
+
+        data.setdefault(bill_no, {})
+        # data[bill_no].setdefault(name_price, 0)
+        data[bill_no].setdefault(name, {})
+        data[bill_no][name].setdefault('quantity', 0)
+
+        if action == 'add':
+            data[bill_no][name]['quantity'] += quantity
+        elif action == 'remove':
+            data[bill_no][name]['quantity'] -= quantity
+
+    # calcuate price
+    for bill_no, name_lst in billno_to_name_order.items():
+        for name in name_lst:
+            data[bill_no].setdefault('total_price', 0)
+            data[bill_no][name].setdefault('price', 0)
+            quantity = data[bill_no][name]['quantity']
+            if quantity < 0:
+                logger.error(f'quantity {quantity} < 0 should not happen!')
+                raise QuantityBelowZero
+            name_price = name_map_price[name] * quantity
+            data[bill_no][name]['price'] = name_price
+            data[bill_no]['total_price'] += name_price
+
+    ret_lst = []
+    for bill_no in billno_order:
+        tmp = {}
+        tmp = {
+            'bill_no': bill_no,
+            'data': data[bill_no]
+        }
+        ret_lst.append(tmp)
+        # billno_to_name_order[bill_no]
+
+    logger.debug(f'ret_lst {ret_lst}')
+
+    return ret_lst

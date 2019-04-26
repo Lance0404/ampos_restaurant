@@ -91,18 +91,15 @@ def menu_search():
     return jsonify(res), 200
 
 
-@bp.route('/billorder', methods=['POST', 'GET', 'PUT'])
+@bp.route('/billorder', methods=['POST', 'GET'])
 @headers({'Cache-Control': 's-maxage=0, max-age=0'})
 def billorder():
     '''
     # insert
-    curl -v -X POST 'http://localhost:8900/v1/billorder' -H 'Content-Type: application/json' -d '{"bill_no": 1, "name": "Hawaiian Pizza", "quantity": 1}'
-
-    # update
-    curl -v -X PUT 'http://localhost:8900/v1/billorder' -H 'Content-Type: application/json' -d '{"bill_no": 1, "name": "Hawaiian Pizza", "quantity": 1}'
+    curl -v -X POST 'http://localhost:8900/v1/billorder' -H 'Content-Type: application/json' -d '{"bill_no": 1, "name": "Hawaiian Pizza", "quantity": 1, "action": "add"}'
 
     # query
-    curl -v -X GET 'http://localhost:8900/v1/billorder' -H 'Content-Type: application/json' -d '{"bill_no": 1, "name": "Hawaiian Pizza", "quantity": 1}'
+    curl -v -X GET 'http://localhost:8900/v1/billorder' -H 'Content-Type: application/json' -d '{"bill_no": 1}'
     '''
 
     res = {'msg': '', 'status': False}
@@ -123,16 +120,28 @@ def billorder():
 @headers({'Cache-Control': 's-maxage=0, max-age=0'})
 def billorder_stat():
     '''
-    # query
-    curl -v -X GET 'http://localhost:8900/v1/billorder/stat' -H 'Content-Type: application/json' -d '{"bill_no": 1}'
+    behavior:
+    1. stat all
+    2. stat specific bill no
 
+    # query w/ billno
+    curl -v -X GET 'http://localhost:8900/v1/billorder/stat?billno=1'
 
-
+    # query all
+    curl -v -X GET 'http://localhost:8900/v1/billorder/stat'
     '''
     res = {'msg': '', 'status': False}
 
-    data = request.json
-    ret = billorder_stat_op(data=data)
+    bill_no = None
+    data = {}
+    if request.args:  # ImmutableMultiDict
+        for k, v in request.args.items():
+            if k == 'billno' and int(v) > 0:
+                bill_no = int(v)
+                break
+
+    current_app.logger.debug(f'bill_no {bill_no}')
+    ret = billorder_stat_op(bill_no=bill_no)
 
     if ret:
         res = {'msg': 'ok', 'status': True}

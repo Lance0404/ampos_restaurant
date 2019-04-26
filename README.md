@@ -28,16 +28,22 @@ curl -v -X POST 'http://localhost:8900/v1/menu' -H 'Content-Type: application/js
 ```
 
 * import data into ampos.billorder (dbname.tablename)
+* add
 ```shell
-curl -v -X POST 'http://localhost:8900/v1/billorder' -H 'Content-Type: application/json' -d '{"bill_no": 1, "name": "Hawaiian Pizza", "quantity": 1}'
-curl -v -X POST 'http://localhost:8900/v1/billorder' -H 'Content-Type: application/json' -d '{"bill_no": 1, "name": "Kimchi", "quantity": 2}'
-curl -v -X POST 'http://localhost:8900/v1/billorder' -H 'Content-Type: application/json' -d '{"bill_no": 1, "name": "Kimchi", "quantity": 1}'
-curl -v -X POST 'http://localhost:8900/v1/billorder' -H 'Content-Type: application/json' -d '{"bill_no": 2, "name": "Xiaolongbao", "quantity": 1}'
-curl -v -X POST 'http://localhost:8900/v1/billorder' -H 'Content-Type: application/json' -d '{"bill_no": 2, "name": "Beer", "quantity": 1}'
-curl -v -X POST 'http://localhost:8900/v1/billorder' -H 'Content-Type: application/json' -d '{"bill_no": 3, "name": "Oolong tea", "quantity": 1}'
-curl -v -X POST 'http://localhost:8900/v1/billorder' -H 'Content-Type: application/json' -d '{"bill_no": 3, "name": "Beer", "quantity": 3}'
-
+curl -v -X POST 'http://localhost:8900/v1/billorder' -H 'Content-Type: application/json' -d '{"bill_no": 1, "name": "Hawaiian Pizza", "quantity": 1, "action": "add"}'
+curl -v -X POST 'http://localhost:8900/v1/billorder' -H 'Content-Type: application/json' -d '{"bill_no": 1, "name": "Kimchi", "quantity": 2, "action": "add"}'
+curl -v -X POST 'http://localhost:8900/v1/billorder' -H 'Content-Type: application/json' -d '{"bill_no": 1, "name": "Kimchi", "quantity": 1, "action": "add"}'
+curl -v -X POST 'http://localhost:8900/v1/billorder' -H 'Content-Type: application/json' -d '{"bill_no": 2, "name": "Xiaolongbao", "quantity": 1, "action": "add"}'
+curl -v -X POST 'http://localhost:8900/v1/billorder' -H 'Content-Type: application/json' -d '{"bill_no": 2, "name": "Beer", "quantity": 1 , "action": "add"}'
+curl -v -X POST 'http://localhost:8900/v1/billorder' -H 'Content-Type: application/json' -d '{"bill_no": 3, "name": "Oolong tea", "quantity": 1, "action": "add"}'
+curl -v -X POST 'http://localhost:8900/v1/billorder' -H 'Content-Type: application/json' -d '{"bill_no": 3, "name": "Beer", "quantity": 3, "action": "add"}'
+```
+* remove
+```shell
+curl -v -X POST 'http://localhost:8900/v1/billorder' -H 'Content-Type: application/json' -d '{"bill_no": 1, "name": "Hawaiian Pizza", "quantity": 1, "action": "remove"}'
+curl -v -X POST 'http://localhost:8900/v1/billorder' -H 'Content-Type: application/json' -d '{"bill_no": 1, "name": "Kimchi", "quantity": 1, "action": "remove"}'
 
 ```
+
 
 

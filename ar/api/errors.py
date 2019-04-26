@@ -1,5 +1,6 @@
 # these are endpoint related errors
 
+
 class InvalidUsage(Exception):
     '''
     example from
@@ -18,3 +19,7 @@ class InvalidUsage(Exception):
         rv = dict(self.payload or ())
         rv['message'] = self.messages
         return rv
+
+
+class QuantityBelowZero(Exception):
+    pass

@@ -85,8 +85,8 @@ class Model(db.Model):
             db.session.commit()
             # ret = self.select(query)
             # if ret and getattr(ret, 'to_dict', None):
-                # for k, v in ret.to_dict().items():
-                    # setattr(self, k, v)
+            # for k, v in ret.to_dict().items():
+            # setattr(self, k, v)
             logger.debug(f'insert {self.__tablename__} successful')
         except Exception as e:
             logger.error(e)
@@ -202,7 +202,8 @@ class Menu(Model):
     image = Column(Text(), nullable=True)
     price = Column(Integer, nullable=False, index=True)
     # details = Column(Text(), nullable=True)
-    details = Column(postgresql.ARRAY(Text, dimensions=1), nullable=True) # store all text as lowercase for better comparison efficiency
+    # store all text as lowercase for better comparison efficiency
+    details = Column(postgresql.ARRAY(Text, dimensions=1), nullable=True)
     _mtime = Column(DateTime(
         timezone=False), onupdate=datetime.datetime.utcnow, default=datetime.datetime.utcnow)
 
@@ -227,6 +228,8 @@ class BillOrder(Model):
     name = Column(String(100), nullable=False, index=True)
     name_hash = Column(String(100), nullable=False, index=True)
     quantity = Column(Integer, nullable=False, index=True)
+    action = Column(Enum('add', 'remove', name='bill_order_action'),
+                    default='add', index=True)
     # order time is like create time
     otime = Column(DateTime(timezone=False),
                    default=datetime.datetime.utcnow)
