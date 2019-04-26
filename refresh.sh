@@ -15,6 +15,7 @@ if [ "$dropdb" == "drop" ]; then
     # ------------------ START init DB ------------------
     docker exec -it ar_psql psql -h localhost -U postgres -c "SELECT pg_terminate_backend(pg_stat_activity.pid) FROM pg_stat_activity WHERE pg_stat_activity.datname = 'ampos' AND pid <> pg_backend_pid()"
     docker exec -it ar_psql psql -h localhost -U postgres -c 'DROP DATABASE ampos'
+    sleep 3
     docker exec -it ar_psql psql -h localhost -U postgres -c 'CREATE DATABASE ampos'    
     # ------------------ END ------------------
     docker-compose restart web
@@ -27,3 +28,4 @@ fi
 docker rmi $(docker images -f "dangling=true" -q)
 docker-compose ps
 curl -v -X GET 'http://localhost/v1/test'
+# curl -v -X GET 'http://localhost:8900/v1/test'

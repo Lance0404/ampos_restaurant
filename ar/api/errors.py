@@ -1,11 +1,19 @@
 # these are endpoint related errors
+class QuantityBelowZero(Exception):
+    pass
 
+class RequiredKeyMissing(Exception):
+    pass
+
+
+'''
+Example:
 
 class InvalidUsage(Exception):
-    '''
-    example from
-    http://flask.pocoo.org/docs/1.0/patterns/apierrors/
-    '''
+
+    # example from
+    # http://flask.pocoo.org/docs/1.0/patterns/apierrors/
+    
     status_code = 400
 
     def __init__(self, message, status_code=None, payload=None):
@@ -20,6 +28,4 @@ class InvalidUsage(Exception):
         rv['message'] = self.messages
         return rv
 
-
-class QuantityBelowZero(Exception):
-    pass
+'''

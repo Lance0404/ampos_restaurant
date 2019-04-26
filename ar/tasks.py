@@ -2,7 +2,7 @@ from ar.models import Menu, BillOrder
 import logging
 import hashlib
 from ar import db
-from .api.errors import *
+from .api.errors import QuantityBelowZero, RequiredKeyMissing
 
 logger = logging.getLogger('ar')
 
@@ -14,7 +14,8 @@ class CheckData():
         optional = ['price', 'desc', 'image', 'details']
         for i in required:
             if i not in data:
-                return False
+                raise RequiredKeyMissing
+                # return False
         return True
 
     @classmethod
@@ -25,7 +26,8 @@ class CheckData():
         for i in optional:
             if i in data:
                 return True
-        return False
+        raise RequiredKeyMissing                
+        # return False
 
     @classmethod
     def billorder(cls, data: dict):
@@ -34,7 +36,8 @@ class CheckData():
 
         for i in required:
             if i not in data:
-                return False
+                raise RequiredKeyMissing
+                # return False
 
         return True
 
@@ -162,7 +165,6 @@ def billorder_operation(data: dict, method: str):
 
 
 def billorder_stat_op(bill_no: int=None):
-    raise QuantityBelowZero # test 
 
     if bill_no:
         sql_str = f'select aa.bill_no,aa.name,aa.action,aa.quantity,b.price from (select a.bill_no,a.name_hash,a.name,a.action,sum(quantity) as quantity from bill_order as a where a.bill_no = \'{bill_no}\' group by a.bill_no,a.name_hash,a.name,a.action) as aa left join menu as b on aa.name_hash = b.name_hash order by aa.bill_no,aa.name,aa.action'
@@ -216,8 +218,9 @@ def billorder_stat_op(bill_no: int=None):
             data[bill_no][name].setdefault('price', 0)
             quantity = data[bill_no][name]['quantity']
             if quantity < 0:
-                logger.error(f'quantity {quantity} < 0 should not happen!')
-                raise QuantityBelowZero
+                logger.warning(f'quantity {quantity} < 0 should not happen!')
+                continue
+                # raise QuantityBelowZero
             name_price = name_map_price[name] * quantity
             data[bill_no][name]['price'] = name_price
             data[bill_no]['total_price'] += name_price

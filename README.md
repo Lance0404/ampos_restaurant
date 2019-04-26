@@ -20,15 +20,20 @@ sudo ./refresh.sh drop
 sudo ./refresh.sh
 ```
 
-### Monitor
+### Monitor log
 * log file was mounted out
 ```shell
 tail -f /var/log/ampos/web.log
+```
+* w/ docker-compose 
+```shell
+sudo docker-compose logs -f --tail=10
 ```
 
 ### Schema design
 * in ar.models
 
+--- 
 ### Operations 
 
 
